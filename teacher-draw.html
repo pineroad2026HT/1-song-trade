@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>송나라 무역왕 챌린지 - 교사용 카드 뽑기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --seal:#E8482F; --jade:#0FA383; --gold:#E0A415; --accent:#6C5BE0;
+    --bg:#FBF4E6; --panel:#FFFDF7; --ink:#241a12; --ink-soft:#6b5a45;
+    --line:#e7d9bd; --shadow:0 10px 30px rgba(80,50,20,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1b140d; --panel:#241b12; --ink:#f3e9d8; --ink-soft:#cbb9a0; --line:#3c2f1f;
+      --shadow:0 10px 30px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1b140d; --panel:#241b12; --ink:#f3e9d8; --ink-soft:#cbb9a0; --line:#3c2f1f;
+    --shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Noto Sans KR',system-ui,sans-serif;
+    padding-inline:16px; padding-block:24px 60px;
+  }
+  .wrap{ max-width:900px; margin:0 auto; }
+  h1{
+    font-family:'Jua',sans-serif; font-size:clamp(22px,4vw,32px);
+    text-align:center; margin:0 0 4px; color:var(--seal);
+  }
+  .sub{ text-align:center; color:var(--ink-soft); margin:0 0 24px; font-size:14px; }
+
+  .round-tabs{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin-bottom:22px; }
+  .round-tab{
+    font-family:'Jua',sans-serif; font-size:16px; padding:10px 20px; border-radius:999px;
+    border:2px solid var(--line); background:var(--panel); color:var(--ink-soft); cursor:pointer;
+  }
+  .round-tab.active{ background:var(--accent); border-color:var(--accent); color:#fff; }
+  .round-tab .dot{
+    display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px;
+    background:var(--ink-soft);
+  }
+  .round-tab.done .dot{ background:var(--jade); }
+
+  section.panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:20px;
+    padding:20px; margin-bottom:20px; box-shadow:var(--shadow);
+  }
+  .panel h2{
+    font-family:'Jua',sans-serif; font-size:19px; margin:0 0 4px; display:flex; align-items:center; gap:8px;
+  }
+  .panel .desc{ color:var(--ink-soft); font-size:13px; margin:0 0 16px; }
+
+  .draw-row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+  .draw-btn{
+    font-family:'Jua',sans-serif; font-size:17px; padding:14px 26px; border-radius:14px;
+    border:none; cursor:pointer; color:#fff; box-shadow:0 6px 0 rgba(0,0,0,.15);
+    transition:transform .08s;
+  }
+  .draw-btn:active{ transform:translateY(3px); box-shadow:0 3px 0 rgba(0,0,0,.15); }
+  .draw-btn.sit{ background:var(--jade); }
+  .draw-btn.trade{ background:var(--gold); }
+  .draw-btn:disabled{ background:#bcb2a0; cursor:not-allowed; box-shadow:none; }
+  .redraw-btn{
+    font-size:13px; padding:8px 14px; border-radius:10px; border:1px solid var(--line);
+    background:transparent; color:var(--ink-soft); cursor:pointer;
+  }
+  .pool-note{ font-size:12px; color:var(--ink-soft); margin-left:auto; }
+
+  .cards-out{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; }
+  .card-out{
+    border:2px solid var(--line); border-radius:16px; overflow:hidden; background:var(--bg);
+    animation:pop .35s ease;
+  }
+  @keyframes pop{ from{ transform:scale(.85); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  .card-out img{ width:100%; aspect-ratio:653/900; object-fit:cover; display:block; cursor:zoom-in; }
+  .card-out .cap{ padding:10px 12px 14px; }
+  .card-out .cap .name{ font-family:'Jua',sans-serif; font-size:16px; margin:0 0 2px; }
+  .card-out .cap .tag{ font-size:12px; color:var(--ink-soft); margin:0; }
+  .card-out.empty{
+    display:flex; align-items:center; justify-content:center; min-height:160px;
+    color:var(--ink-soft); font-size:13px; border-style:dashed;
+  }
+  .card-out.drawing{
+    display:flex; align-items:center; justify-content:center; min-height:160px;
+    border-style:dashed; background:linear-gradient(135deg, var(--panel), var(--bg));
+  }
+  .card-out.drawing .mark{
+    font-size:44px; animation:markShake .15s infinite alternate, markPulse .6s infinite alternate;
+  }
+  @keyframes markShake{ from{ transform:rotate(-8deg) scale(1); } to{ transform:rotate(8deg) scale(1.1); } }
+  @keyframes markPulse{ from{ opacity:.45; } to{ opacity:1; } }
+  .draw-btn.next-card{ background:var(--accent); }
+  .card-out.drawing .num{
+    font-family:'Jua',sans-serif; font-size:64px; color:var(--seal); animation:countPop .4s ease;
+  }
+  @keyframes countPop{ from{ transform:scale(1.7); opacity:0; } to{ transform:scale(1); opacity:1; } }
+
+  .history{ font-size:13px; color:var(--ink-soft); }
+  .history h3{ font-family:'Jua',sans-serif; font-size:14px; color:var(--ink); margin:0 0 8px; }
+  .history ul{ margin:0; padding-left:18px; }
+  .history li{ margin-bottom:4px; }
+
+  .reset-all{
+    display:block; margin:28px auto 0; font-size:13px; padding:10px 18px; border-radius:10px;
+    border:1px solid var(--seal); background:transparent; color:var(--seal); cursor:pointer;
+  }
+
+  #zoomOverlay{
+    position:fixed; inset:0; background:rgba(10,6,2,.88); display:flex; align-items:center; justify-content:center;
+    padding:24px; z-index:50;
+  }
+  #zoomOverlay[hidden]{ display:none !important; }
+  #zoomOverlay img{ max-width:100%; max-height:80vh; border-radius:14px; box-shadow:0 20px 60px rgba(0,0,0,.5); }
+  #zoomOverlay .zoom-close{
+    position:absolute; top:18px; right:18px; width:40px; height:40px; border-radius:50%;
+    border:none; background:#fff; font-size:20px; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🎲 교사용 카드 뽑기</h1>
+  <p class="sub">상황카드·거래카드를 무작위로 뽑아 학생들에게 발표하세요. 같은 회차에서는 겹치는 카드가 나오지 않습니다.</p>
+
+  <div class="round-tabs" id="roundTabs"></div>
+
+  <section class="panel" id="sitPanel">
+    <h2>⚓ 상황카드 (2장)</h2>
+    <p class="desc">이번 회차에서 사용할 상황카드 2장을 뽑습니다. 두 카드는 서로 겹치지 않아요.</p>
+    <div class="draw-row">
+      <button class="draw-btn sit" id="drawSitBtn">🎲 상황카드 뽑기 시작</button>
+      <button class="draw-btn next-card" id="drawSitNextCardBtn" hidden>🎲 다음 카드 뽑기</button>
+      <button class="redraw-btn" id="redrawSitBtn" hidden>다시 뽑기</button>
+      <span class="pool-note" id="sitPoolNote"></span>
+    </div>
+    <div class="cards-out" id="sitOut">
+      <div class="card-out empty">아직 뽑지 않았습니다</div>
+      <div class="card-out empty">아직 뽑지 않았습니다</div>
+    </div>
+    <button class="draw-btn trade" id="nextToTradeBtn" hidden style="margin-top:16px;">다음 ▶ 거래카드 뽑으러 가기</button>
+  </section>
+
+  <section class="panel" id="tradePanel" hidden>
+    <button class="redraw-btn" id="backToSitBtn" style="margin-bottom:12px;">◀ 상황카드 다시 보기</button>
+    <h2>💰 거래카드 (1장)</h2>
+    <p class="desc">이번 회차에서 사용할 거래카드 1장을 뽑습니다.</p>
+    <div class="draw-row">
+      <button class="draw-btn trade" id="drawTradeBtn">🎲 거래카드 뽑기</button>
+      <button class="redraw-btn" id="redrawTradeBtn" hidden>다시 뽑기</button>
+      <span class="pool-note" id="tradePoolNote"></span>
+    </div>
+    <div class="cards-out" id="tradeOut">
+      <div class="card-out empty">아직 뽑지 않았습니다</div>
+    </div>
+  </section>
+
+  <section class="panel history">
+    <h3>📋 지금까지 뽑은 카드</h3>
+    <ul id="historyList"><li>없음</li></ul>
+  </section>
+
+  <button class="reset-all" id="resetAllBtn">🔄 전체 초기화 (다음 반 수업 전에 눌러주세요)</button>
+</div>
+
+<div id="zoomOverlay" hidden>
+  <button class="zoom-close" id="zoomClose">✕</button>
+  <img id="zoomImg" src="" alt="">
+</div>
+
+<script>
+(function(){
+  var IMG_BASE = 'song-cards-compressed/';
+
+  var SIT = [
+    {id:'s1',  title:'짙은 안개',        tag:'나침반'},
+    {id:'s2',  title:'밤바다의 폭풍우',   tag:'나침반'},
+    {id:'s3',  title:'미지의 항로 개척',  tag:'나침반'},
+    {id:'s4',  title:'거센 파도',         tag:'선박 건조술'},
+    {id:'s5',  title:'선박 충돌 사고',    tag:'선박 건조술'},
+    {id:'s6',  title:'대형 선박 건조 기회', tag:'선박 건조술'},
+    {id:'s7',  title:'해적선 출현',       tag:'화약 무기'},
+    {id:'s8',  title:'조난 상선 구조 요청', tag:'화약 무기'},
+    {id:'s9',  title:'통행세 강요',       tag:'화약 무기'},
+    {id:'s10', title:'위조 교자 검사',    tag:'인쇄술'},
+    {id:'s11', title:'저잣거리의 책 열풍', tag:'인쇄술'},
+    {id:'s12', title:'과거 시험 열풍',    tag:'인쇄술'}
+  ];
+  var TRADE = [
+    {id:'t1', title:'도자기 열풍',   tag:'취안저우'},
+    {id:'t2', title:'위조품 소동',   tag:'광저우'},
+    {id:'t3', title:'시박사의 입항 허가', tag:'시박사'},
+    {id:'t4', title:'공급 과잉',     tag:'비단 시세 하락'},
+    {id:'t5', title:'구란의 인기',   tag:'차 시세 상승'},
+    {id:'t6', title:'차 수요 둔화',  tag:'차 시세 하락'},
+    {id:'t7', title:'모내기법의 보급', tag:'전체 시세 상승'},
+    {id:'t8', title:'몬순 지연',     tag:'전체 시세 하락'}
+  ];
+  var SIT_IMG_START = 8;   // s1 -> 8.jpg ... s12 -> 19.jpg
+  var TRADE_IMG_START = 20; // t1 -> 20.jpg ... t8 -> 27.jpg
+  SIT.forEach(function(c,i){ c.img = IMG_BASE + (SIT_IMG_START+i) + '.jpg'; });
+  TRADE.forEach(function(c,i){ c.img = IMG_BASE + (TRADE_IMG_START+i) + '.jpg'; });
+
+  var NUM_ROUNDS = 3;
+  var state = {
+    round: 0, // 0-indexed
+    rounds: [null,null,null].map(function(){ return { sit: null, trade: null, phase: 'sit' }; }),
+    usedSit: [],   // ids used across all rounds so far
+    usedTrade: []
+  };
+
+  function pickRandomDistinct(pool, excludeIds, count){
+    var avail = pool.filter(function(c){ return excludeIds.indexOf(c.id) === -1; });
+    if (avail.length < count) avail = pool.slice(); // pool exhausted: allow repeats as fallback
+    var picked = [];
+    var copy = avail.slice();
+    while (picked.length < count && copy.length){
+      var idx = Math.floor(Math.random()*copy.length);
+      picked.push(copy.splice(idx,1)[0]);
+    }
+    return picked;
+  }
+
+  function renderTabs(){
+    var el = document.getElementById('roundTabs');
+    el.innerHTML = '';
+    for (var i=0;i<NUM_ROUNDS;i++){
+      var r = state.rounds[i];
+      var done = r.sit && r.trade;
+      var btn = document.createElement('button');
+      btn.className = 'round-tab' + (i===state.round?' active':'') + (done?' done':'');
+      btn.innerHTML = '<span class="dot"></span>' + (i+1) + '차 항해';
+      btn.addEventListener('click', function(idx){ return function(){ state.round = idx; renderAll(); }; }(i));
+      el.appendChild(btn);
+    }
+  }
+
+  function cardOutHTML(c){
+    return '<div class="card-out">'
+      + '<img src="'+c.img+'" alt="'+c.title+'" data-zoom="'+c.img+'" data-zoom-alt="'+c.title+'">'
+      + '<div class="cap"><p class="name">'+c.title+'</p><p class="tag">'+c.tag+'</p></div>'
+      + '</div>';
+  }
+  function emptyOutHTML(){
+    return '<div class="card-out empty">아직 뽑지 않았습니다</div>';
+  }
+  function drawingOutHTML(){
+    return '<div class="card-out drawing"><span class="mark">❓</span></div>';
+  }
+  function countdownOutHTML(n){
+    return '<div class="card-out drawing"><span class="mark num">'+n+'</span></div>';
+  }
+
+  var busy = false;
+  function setBusy(b){
+    busy = b;
+    Array.prototype.forEach.call(document.querySelectorAll('.round-tab'), function(t){ t.disabled = b; });
+    document.getElementById('resetAllBtn').disabled = b;
+  }
+
+  var audioCtx = null;
+  function actx(){
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  function playDrumHit(ac, t, gainScale){
+    // low tom-like thump
+    var osc = ac.createOscillator();
+    var oGain = ac.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, t);
+    osc.frequency.exponentialRampToValueAtTime(55, t+0.09);
+    oGain.gain.setValueAtTime(0.0001, t);
+    oGain.gain.exponentialRampToValueAtTime(0.4*gainScale, t+0.008);
+    oGain.gain.exponentialRampToValueAtTime(0.0001, t+0.13);
+    osc.connect(oGain); oGain.connect(ac.destination);
+    osc.start(t); osc.stop(t+0.15);
+
+    // noise snap for texture
+    var buf = ac.createBuffer(1, Math.floor(ac.sampleRate*0.05), ac.sampleRate);
+    var data = buf.getChannelData(0);
+    for (var j=0;j<data.length;j++) data[j] = (Math.random()*2-1) * (1-j/data.length);
+    var src = ac.createBufferSource();
+    src.buffer = buf;
+    var filter = ac.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 200; filter.Q.value = 1;
+    var nGain = ac.createGain();
+    nGain.gain.value = 0.14*gainScale;
+    src.connect(filter); filter.connect(nGain); nGain.connect(ac.destination);
+    src.start(t);
+  }
+  function playSuspense(durationMs){
+    // accelerating drum roll: hits start slow and speed up toward the reveal
+    try{
+      var ac = actx();
+      var now = ac.currentTime;
+      var dur = durationMs/1000;
+      var minGap = 0.035, maxGap = 0.17;
+      var elapsed = 0, hits = [];
+      while (elapsed < dur){
+        var progress = elapsed/dur;
+        var gap = maxGap - (maxGap-minGap)*progress;
+        hits.push(elapsed);
+        elapsed += gap;
+      }
+      hits.forEach(function(e, i){
+        var gainScale = 0.7 + 0.6*(i/hits.length);
+        playDrumHit(ac, now+e, gainScale);
+      });
+    }catch(e){}
+  }
+  function playTick(freq){
+    try{
+      var ac = actx();
+      var now = ac.currentTime;
+      var osc = ac.createOscillator();
+      var gain = ac.createGain();
+      osc.type = 'square';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.18, now+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+0.18);
+      osc.connect(gain); gain.connect(ac.destination);
+      osc.start(now); osc.stop(now+0.2);
+    }catch(e){}
+  }
+  function playReveal(){
+    try{
+      var ac = actx();
+      var now = ac.currentTime;
+      [880, 1318].forEach(function(f, i){
+        var osc = ac.createOscillator();
+        var gain = ac.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = f;
+        var t0 = now + i*0.09;
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(0.22, t0+0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0+0.28);
+        osc.connect(gain); gain.connect(ac.destination);
+        osc.start(t0); osc.stop(t0+0.3);
+      });
+    }catch(e){}
+  }
+
+  function renderSitOut(r, drawingIdx){
+    var html = '';
+    for (var i=0;i<2;i++){
+      if (r.sit && r.sit[i]) html += cardOutHTML(r.sit[i]);
+      else if (i === drawingIdx) html += drawingOutHTML();
+      else html += emptyOutHTML();
+    }
+    document.getElementById('sitOut').innerHTML = html;
+  }
+  function renderTradeOut(r, drawing){
+    var tradeOut = document.getElementById('tradeOut');
+    if (r.trade) tradeOut.innerHTML = cardOutHTML(r.trade);
+    else if (drawing) tradeOut.innerHTML = drawingOutHTML();
+    else tradeOut.innerHTML = emptyOutHTML();
+  }
+
+  function renderRoundPanels(){
+    var r = state.rounds[state.round];
+
+    var sitPanel = document.getElementById('sitPanel');
+    var tradePanel = document.getElementById('tradePanel');
+    sitPanel.hidden = (r.phase !== 'sit');
+    tradePanel.hidden = (r.phase !== 'trade');
+
+    var drawSitBtn = document.getElementById('drawSitBtn');
+    var drawSitNextCardBtn = document.getElementById('drawSitNextCardBtn');
+    var redrawSitBtn = document.getElementById('redrawSitBtn');
+    var nextToTradeBtn = document.getElementById('nextToTradeBtn');
+
+    renderSitOut(r, -1);
+    if (!r.sit){
+      drawSitBtn.hidden = false; drawSitNextCardBtn.hidden = true;
+      redrawSitBtn.hidden = true; nextToTradeBtn.hidden = true;
+    } else if (r.sit.length < 2){
+      drawSitBtn.hidden = true; drawSitNextCardBtn.hidden = false;
+      redrawSitBtn.hidden = true; nextToTradeBtn.hidden = true;
+    } else {
+      drawSitBtn.hidden = true; drawSitNextCardBtn.hidden = true;
+      redrawSitBtn.hidden = false; nextToTradeBtn.hidden = false;
+    }
+    document.getElementById('sitPoolNote').textContent =
+      (12 - state.usedSit.length) + ' / 12장 남음';
+
+    var drawTradeBtn = document.getElementById('drawTradeBtn');
+    var redrawTradeBtn = document.getElementById('redrawTradeBtn');
+    renderTradeOut(r, false);
+    if (r.trade){
+      drawTradeBtn.hidden = true;
+      redrawTradeBtn.hidden = false;
+    } else {
+      drawTradeBtn.hidden = false;
+      redrawTradeBtn.hidden = true;
+    }
+    document.getElementById('tradePoolNote').textContent =
+      (8 - state.usedTrade.length) + ' / 8장 남음';
+  }
+
+  function renderHistory(){
+    var list = document.getElementById('historyList');
+    var items = [];
+    state.rounds.forEach(function(r, i){
+      if (!r.sit && !r.trade) return;
+      var parts = [];
+      if (r.sit) parts.push('상황카드: ' + r.sit.map(function(c){return c.title;}).join(', '));
+      if (r.trade) parts.push('거래카드: ' + r.trade.title);
+      items.push('<li><strong>' + (i+1) + '차</strong> — ' + parts.join(' / ') + '</li>');
+    });
+    list.innerHTML = items.length ? items.join('') : '<li>없음</li>';
+  }
+
+  function renderAll(){
+    renderTabs();
+    renderRoundPanels();
+    renderHistory();
+  }
+
+  function revealNextSit(){
+    var r = state.rounds[state.round];
+    var idx = r.sit.length;
+    setBusy(true);
+    renderSitOut(r, idx);
+    playSuspense(900);
+    setTimeout(function(){
+      var card = r._sitQueue[idx];
+      r.sit.push(card);
+      if (state.usedSit.indexOf(card.id)===-1) state.usedSit.push(card.id);
+      playReveal();
+      setBusy(false);
+      renderAll();
+    }, 900);
+  }
+
+  document.getElementById('drawSitBtn').addEventListener('click', function(){
+    if (busy) return;
+    var r = state.rounds[state.round];
+    r._sitQueue = pickRandomDistinct(SIT, state.usedSit, 2);
+    r.sit = [];
+    revealNextSit();
+  });
+  document.getElementById('drawSitNextCardBtn').addEventListener('click', function(){
+    if (busy) return;
+    revealNextSit();
+  });
+  document.getElementById('redrawSitBtn').addEventListener('click', function(){
+    if (busy) return;
+    var r = state.rounds[state.round];
+    if (r.sit) r.sit.forEach(function(c){
+      var idx = state.usedSit.indexOf(c.id);
+      if (idx>-1) state.usedSit.splice(idx,1);
+    });
+    r.sit = null;
+    r._sitQueue = null;
+    renderAll();
+  });
+
+  document.getElementById('nextToTradeBtn').addEventListener('click', function(){
+    var r = state.rounds[state.round];
+    r.phase = 'trade';
+    renderAll();
+  });
+  document.getElementById('backToSitBtn').addEventListener('click', function(){
+    var r = state.rounds[state.round];
+    r.phase = 'sit';
+    renderAll();
+  });
+
+  document.getElementById('drawTradeBtn').addEventListener('click', function(){
+    if (busy) return;
+    var r = state.rounds[state.round];
+    var picked = pickRandomDistinct(TRADE, state.usedTrade, 1)[0];
+    setBusy(true);
+    document.getElementById('drawTradeBtn').hidden = true;
+    var tradeOut = document.getElementById('tradeOut');
+    var steps = [3,2,1];
+    function showStep(i){
+      if (i < steps.length){
+        tradeOut.innerHTML = countdownOutHTML(steps[i]);
+        playTick(340 + (3-steps[i])*90);
+        setTimeout(function(){ showStep(i+1); }, 500);
+      } else {
+        r.trade = picked;
+        if (state.usedTrade.indexOf(picked.id)===-1) state.usedTrade.push(picked.id);
+        playReveal();
+        setBusy(false);
+        renderAll();
+      }
+    }
+    showStep(0);
+  });
+  document.getElementById('redrawTradeBtn').addEventListener('click', function(){
+    if (busy) return;
+    var r = state.rounds[state.round];
+    if (r.trade){
+      var idx = state.usedTrade.indexOf(r.trade.id);
+      if (idx>-1) state.usedTrade.splice(idx,1);
+    }
+    r.trade = null;
+    renderAll();
+  });
+
+  document.getElementById('resetAllBtn').addEventListener('click', function(){
+    if (!confirm('모든 뽑기 기록을 지우고 처음부터 다시 시작할까요?')) return;
+    state = {
+      round: 0,
+      rounds: [null,null,null].map(function(){ return { sit: null, trade: null, phase: 'sit' }; }),
+      usedSit: [], usedTrade: []
+    };
+    renderAll();
+  });
+
+  // zoom
+  var zoomOverlay = document.getElementById('zoomOverlay');
+  var zoomImg = document.getElementById('zoomImg');
+  document.addEventListener('click', function(e){
+    var t = e.target.closest('[data-zoom]');
+    if (!t) return;
+    zoomImg.src = t.getAttribute('data-zoom');
+    zoomImg.alt = t.getAttribute('data-zoom-alt') || '';
+    zoomOverlay.hidden = false;
+  });
+  document.getElementById('zoomClose').addEventListener('click', function(){ zoomOverlay.hidden = true; });
+  zoomOverlay.addEventListener('click', function(e){ if (e.target === zoomOverlay) zoomOverlay.hidden = true; });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
